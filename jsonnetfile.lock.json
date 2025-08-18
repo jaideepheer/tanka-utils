@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "dependencies": [
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/argoproj/argo-cd.git",
+          "subdir": "manifests"
+        }
+      },
+      "version": "03c4ad854c1e6d922a121cd40f505d9bc6e402da",
+      "sum": "zBtjnvWlwyaLiL4dfwMMS3WL1Y94KRltfTzfvfPqWoc="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/argo-cd-libsonnet.git",
+          "subdir": "2.13"
+        }
+      },
+      "version": "e9a4cf999291aa5d3d19f914a2ce998eb3fbdbf1",
+      "sum": "R8v71UVP8hfrL1YiZZGHwieBBqePchGHg11eL7MIsGQ="
+    },
+    {
+      "source": {
+        "git": {
+          "remote": "https://github.com/jsonnet-libs/k8s-libsonnet.git",
+          "subdir": "1.29"
+        }
+      },
+      "version": "14aa0545f3b789c3fa4ffe19ef9709ec5fa8c147",
+      "sum": "rD6FKvLBJtT+gRJDOz6z8iUzvjf/BiH8vdkyIcZMsno="
+    }
+  ],
+  "legacyImports": false
+}
