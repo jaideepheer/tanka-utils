@@ -60,7 +60,7 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
           // Remove annotations from template - will be handled by templatePatch
         },
         spec: {
-          project: '{{default .spec.argocd.application.project "default"}}',
+          project: '{{if .spec.argocd.application.project}}{{.spec.argocd.application.project}}{{else}}"default"{{end}}',
           source: {
             repoURL: repo_url,
             targetRevision: target_revision,
@@ -87,12 +87,12 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
       templatePatch: |||
         metadata:
           annotations:
-            argocd.argoproj.io/sync-wave: "{{default .spec.argocd.application.syncWave 10}}"
+            argocd.argoproj.io/sync-wave: "{{if hasKey .spec.argocd.application \"syncWave\"}}{{printf "%v" .spec.argocd.application.syncWave}}{{else}}10{{end}}"
         spec:
           syncPolicy:
             automated:
-              prune: {{default .spec.argocd.application.prune true}}
-              selfHeal: {{default .spec.argocd.application.selfHeal true}}
+              prune: {{if .spec.argocd.application.prune}}{{.spec.argocd.application.prune}}{{else}}true{{end}}
+              selfHeal: {{if .spec.argocd.application.selfHeal}}{{.spec.argocd.application.selfHeal}}{{else}}true{{end}}
             syncOptions:
             {{- if .spec.argocd.application.syncOptions }}
             {{- range .spec.argocd.application.syncOptions }}
