@@ -58,15 +58,17 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
         metadata: {
           name: '{{.path.basenameNormalized}}',
           annotations: {
-            'argocd.argoproj.io/sync-wave': |||
-              {{default .spec.argocd.application.syncWave 10}}
-            |||.strip(),
+            'argocd.argoproj.io/sync-wave':
+              |||
+                {{default .spec.argocd.application.syncWave 10}}
+              |||,
           },
         },
         spec: {
-          project: |||
-            {{default .spec.argocd.application.project "default"}}
-          |||.strip(),
+          project:
+            |||
+              {{default .spec.argocd.application.project "default"}}
+            |||,
           source: {
             repoURL: repo_url,
             targetRevision: target_revision,
@@ -76,9 +78,10 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
               env: [
                 {
                   name: 'TK_ENV',
-                  value: |||
-                    {{.metadata.name}}
-                  |||.strip(),
+                  value:
+                    |||
+                      {{.metadata.name}}
+                    |||,
                 },
               ],
             },
@@ -90,23 +93,26 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
           },
           syncPolicy: {
             automated: {
-              prune: |||
-                {{default .spec.argocd.application.prune true}}
-              |||.strip(),
-              selfHeal: |||
-                {{default .spec.argocd.application.selfHeal true}}
-              |||.strip(),
+              prune:
+                |||
+                  {{default .spec.argocd.application.prune true}}
+                |||,
+              selfHeal:
+                |||
+                  {{default .spec.argocd.application.selfHeal true}}
+                |||,
             },
-            syncOptions: |||
-              {{- if .spec.argocd.application.syncOptions }}
-              {{- range .spec.argocd.application.syncOptions }}
-              - {{ . }}
-              {{- end }}
-              {{- else }}
-              - CreateNamespace=true
-              - ServerSideApply=true
-              {{- end }}
-            |||.strip(),
+            syncOptions:
+              |||
+                {{- if .spec.argocd.application.syncOptions }}
+                {{- range .spec.argocd.application.syncOptions }}
+                - {{ . }}
+                {{- end }}
+                {{- else }}
+                - CreateNamespace=true
+                - ServerSideApply=true
+                {{- end }}
+              |||,
           },
         },
       },
