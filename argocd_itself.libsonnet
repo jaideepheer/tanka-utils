@@ -1,6 +1,6 @@
-local k = import 'github.com/jsonnet-libs/k8s-libsonnet/1.29/main.libsonnet';
 local utils = import './k8s_utils.libsonnet';
 local argo = import 'github.com/jsonnet-libs/argo-cd-libsonnet/2.13/main.libsonnet';
+local k = import 'github.com/jsonnet-libs/k8s-libsonnet/1.29/main.libsonnet';
 
 local upstream = std.parseYaml(importstr 'github.com/argoproj/argo-cd/manifests/install.yaml');
 local tanka_plugin = import './argocd_tanka_plugin/main.libsonnet';
@@ -57,9 +57,16 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
       template: {
         metadata: {
           name: '{{.path.basenameNormalized}}',
+          annotations: {
+            'argocd.argoproj.io/sync-wave': |||
+              {{default .spec.argocd.application.syncWave 10}}
+            |||.strip(),
+          },
         },
         spec: {
-          project: project,
+          project: |||
+            {{default .spec.argocd.application.project "default"}}
+          |||.strip(),
           source: {
             repoURL: repo_url,
             targetRevision: target_revision,
@@ -69,7 +76,9 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
               env: [
                 {
                   name: 'TK_ENV',
-                  value: '{{.metadata.name}}',
+                  value: |||
+                    {{.metadata.name}}
+                  |||.strip(),
                 },
               ],
             },
@@ -81,14 +90,23 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
           },
           syncPolicy: {
             automated: {
-              prune: true,
-              selfHeal: true,
+              prune: |||
+                {{default .spec.argocd.application.prune true}}
+              |||.strip(),
+              selfHeal: |||
+                {{default .spec.argocd.application.selfHeal true}}
+              |||.strip(),
             },
-            syncOptions: [
-              // Namespace Auto-Creation ensures that namespace specified as the application destination exists in the destination cluster.
-              'CreateNamespace=true',
-              'ServerSideApply=true',
-            ],
+            syncOptions: |||
+              {{- if .spec.argocd.application.syncOptions }}
+              {{- range .spec.argocd.application.syncOptions }}
+              - {{ . }}
+              {{- end }}
+              {{- else }}
+              - CreateNamespace=true
+              - ServerSideApply=true
+              {{- end }}
+            |||.strip(),
           },
         },
       },
