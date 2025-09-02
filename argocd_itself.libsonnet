@@ -87,7 +87,7 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
       templatePatch: |||
         metadata:
           annotations:
-            argocd.argoproj.io/sync-wave: "{{if hasKey .spec.argocd.application \"syncWave\"}}{{printf "%v" .spec.argocd.application.syncWave}}{{else}}10{{end}}"
+            argocd.argoproj.io/sync-wave: "{{if hasKey .spec.argocd.application "syncWave"}}{{printf "%v" .spec.argocd.application.syncWave}}{{else}}10{{end}}"
         spec:
           syncPolicy:
             automated:
