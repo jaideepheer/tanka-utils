@@ -57,18 +57,10 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
       template: {
         metadata: {
           name: '{{.path.basenameNormalized}}',
-          annotations: {
-            'argocd.argoproj.io/sync-wave':
-              |||
-                {{default .spec.argocd.application.syncWave 10}}
-              |||,
-          },
+          // Remove annotations from template - will be handled by templatePatch
         },
         spec: {
-          project:
-            |||
-              {{default .spec.argocd.application.project "default"}}
-            |||,
+          project: '{{default .spec.argocd.application.project "default"}}',
           source: {
             repoURL: repo_url,
             targetRevision: target_revision,
@@ -78,10 +70,7 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
               env: [
                 {
                   name: 'TK_ENV',
-                  value:
-                    |||
-                      {{.metadata.name}}
-                    |||,
+                  value: '{{.metadata.name}}',
                 },
               ],
             },
@@ -91,31 +80,29 @@ local patched_argocd = function(namespace) utils.groupK8sDeep(
             // The namespace will only be set for namespace-scoped resources that have not set a value for .metadata.namespace
             namespace: default_namespace,
           },
-          syncPolicy: {
-            automated: {
-              prune:
-                |||
-                  {{default .spec.argocd.application.prune true}}
-                |||,
-              selfHeal:
-                |||
-                  {{default .spec.argocd.application.selfHeal true}}
-                |||,
-            },
-            syncOptions:
-              |||
-                {{- if .spec.argocd.application.syncOptions }}
-                {{- range .spec.argocd.application.syncOptions }}
-                - {{ . }}
-                {{- end }}
-                {{- else }}
-                - CreateNamespace=true
-                - ServerSideApply=true
-                {{- end }}
-              |||,
-          },
+          // Remove syncPolicy from template - will be handled by templatePatch
         },
       },
+      // Move all non-string fields and complex templating to templatePatch
+      templatePatch: |||
+        metadata:
+          annotations:
+            argocd.argoproj.io/sync-wave: "{{default .spec.argocd.application.syncWave 10}}"
+        spec:
+          syncPolicy:
+            automated:
+              prune: {{default .spec.argocd.application.prune true}}
+              selfHeal: {{default .spec.argocd.application.selfHeal true}}
+            syncOptions:
+            {{- if .spec.argocd.application.syncOptions }}
+            {{- range .spec.argocd.application.syncOptions }}
+            - {{ . }}
+            {{- end }}
+            {{- else }}
+            - CreateNamespace=true
+            - ServerSideApply=true
+            {{- end }}
+      |||,
     },
   },
 }
